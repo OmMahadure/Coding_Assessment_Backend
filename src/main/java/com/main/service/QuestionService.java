@@ -48,6 +48,35 @@ public class QuestionService {
 
         return mapQuestion(saved, false);
     }
+    
+    private QuestionResponse mapQuestion(
+            Question question, boolean includeHidden
+        ) {
+
+            List<TestCaseResponse> tests = question.getTestCases()
+                .stream()
+                .filter(test -> includeHidden || test.isSample())
+                .map(test -> new TestCaseResponse(
+                    test.getId(),
+                    test.getInputData(),
+                    test.getExpectedOutput(),
+                    test.isSample(),
+                    test.getMarks(),
+                    test.getExecutionOrder()
+                ))
+                .toList();
+
+            return new QuestionResponse(
+                question.getId(),
+                question.getTitle(),
+                question.getDescription(),
+                question.getTopic(),
+                question.getDifficulty(),
+                question.getStatus(),
+                tests
+            );
+        }
+    
 
     // User: view only published questions
     @Transactional(readOnly = true)
@@ -96,33 +125,21 @@ public class QuestionService {
 
         return mapQuestion(questionRepository.save(question), true);
     }
+    
+ // Admin: delete a question
+    @Transactional
+    public void deleteQuestion(Long id) {
 
-    private QuestionResponse mapQuestion(
-        Question question, boolean includeHidden
-    ) {
+        Question question = questionRepository.findById(id)
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND, "Question not found"
+            ));
 
-        List<TestCaseResponse> tests = question.getTestCases()
-            .stream()
-            .filter(test -> includeHidden || test.isSample())
-            .map(test -> new TestCaseResponse(
-                test.getId(),
-                test.getInputData(),
-                test.getExpectedOutput(),
-                test.isSample(),
-                test.getMarks(),
-                test.getExecutionOrder()
-            ))
-            .toList();
-
-        return new QuestionResponse(
-            question.getId(),
-            question.getTitle(),
-            question.getDescription(),
-            question.getTopic(),
-            question.getDifficulty(),
-            question.getStatus(),
-            tests
-        );
+        questionRepository.delete(question);
     }
+    
+    
+
+   
 
 }

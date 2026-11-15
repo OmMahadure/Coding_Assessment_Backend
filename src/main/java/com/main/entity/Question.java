@@ -40,9 +40,6 @@ public class Question {
     @OrderBy("executionOrder ASC")
     private List<TestCase> testCases = new ArrayList<>();
 
-    public Question() {
-    }
-
     // Keeps both sides of the relationship synchronized
     public void addTestCase(TestCase testCase) {
         testCases.add(testCase);
@@ -53,6 +50,8 @@ public class Question {
         testCases.remove(testCase);
         testCase.setQuestion(null);
     }
+    
+    
 
     public Long getId() {
         return id;
